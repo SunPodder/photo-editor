@@ -1,5 +1,5 @@
-<script setup>
-import { onMounted, reactive, ref, watchEffect } from "vue";
+<script lang="ts" setup>
+import { reactive, ref, watchEffect } from "vue";
 
 const defaultFilters = [
 	{ name: "grayscale", value: 0, unit: "%", min: 0, max: 100 },
@@ -63,6 +63,7 @@ const loadImage = (file) => {
 };
 
 const downloadImage = () => {
+	if (!selectedImage.value) return;
 	const canvas = document.createElement("canvas");
 	const img = new Image();
 	img.src = selectedImage.value;
@@ -70,6 +71,7 @@ const downloadImage = () => {
 		canvas.width = img.width;
 		canvas.height = img.height;
 		const ctx = canvas.getContext("2d");
+		if (!ctx) return;
 		ctx.filter = filter.value;
 		ctx.drawImage(img, 0, 0);
 		const link = document.createElement("a");
@@ -123,12 +125,12 @@ const downloadImage = () => {
 			<h2>Filters</h2>
 			<ul>
 				<li
-					v-for="filter in filters"
-					:key="filter"
-					@click="selectedFilter = filters.indexOf(filter)"
+					v-for="(filter, i) in filters"
+					:key="i"
+					@click="selectedFilter = i"
 					:style="{
-						backgroundColor: selectedFilter === filters.indexOf(filter) ? 'hsl(0, 0%, 40%)' : 'transparent',
-						color: selectedFilter === filters.indexOf(filter) ? 'white' : 'hsl(0, 0%, 40%)',
+						backgroundColor: selectedFilter === i ? 'hsl(0, 0%, 40%)' : 'transparent',
+						color: selectedFilter === i ? 'white' : 'hsl(0, 0%, 40%)',
 					}"
 				>
 					{{
@@ -143,7 +145,7 @@ const downloadImage = () => {
 					:min="filters[selectedFilter].min"
 					:max="filters[selectedFilter].max"
 					:value="filters[selectedFilter].value"
-					@input="filters[selectedFilter].value = $event.target.value"
+					@input="filters[selectedFilter].value = +(($event.target as HTMLInputElement).value)"
 				/>
 			</div>
 			<div>
